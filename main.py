@@ -129,7 +129,7 @@ for idx, each_file_name in enumerate(data_list_without_ext, 0):
 
 
 # Pretrained 모델과 토크나이저 불러오기
-model_name = "facebook/wav2vec2-large-960h"
+model_name = "facebook/wav2vec2-base-960h"
 processor = Wav2Vec2Processor.from_pretrained(model_name)
 model = Wav2Vec2ForCTC.from_pretrained(model_name)
 
