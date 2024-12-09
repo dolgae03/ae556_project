@@ -6,8 +6,9 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-import jiwer
+import jiwer, random
 from pydub import AudioSegment
+import numpy as np
 
 import torch
 from transformers import (
@@ -21,18 +22,17 @@ from src.SpeechDataset import SpeechDataset
 from src.load_dataset import download_file, extract_tgz
 from src.utils import parse_xml_to_segments, clean_text, VocabularyMatcher
 
+DEBUG = False
+
 @dataclass
 class DataCollatorCTCWithPadding:
     processor: Wav2Vec2Processor
     padding: Union[bool, str] = True
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
-        # 오디오 부분 추출
         input_features = [{"input_values": feature["input_values"]} for feature in features]
-        # 라벨 부분 추출
         label_features = [feature["labels"] for feature in features]
 
-        # 오디오 입력 패딩
         batch = self.processor.feature_extractor.pad(
             input_features,
             padding=self.padding,
@@ -54,9 +54,27 @@ class DataCollatorCTCWithPadding:
         return batch
 
 class ModelRunner:
-    def __init__(self):
-        self.load_model()
+    trained_model_path = "./results/trained_model"
+
+    def __init__(self, use_pretrained = False, use_processor = False):
+        self.use_pretrained = use_pretrained
+        self.use_processor = use_processor
+
+        self.fix_seed()
+        self.load_model(use_pretrained)
         self.prepare_data()
+
+    def fix_seed(self, seed=42):
+        random.seed(seed)
+        np.random.seed(seed)
+    
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)  # Multi-GPU의 경우
+        
+        # PyTorch에서 Reproducibility 보장
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
     def prepare_data(self):
         url = "https://www.replaywell.com/atco2/download/ATCO2-ASRdataset-v1_beta.tgz"
@@ -107,18 +125,30 @@ class ModelRunner:
                     f.write(segment_text)
         
         self.dataset = SpeechDataset(audio_processed_dir, text_processed_dir, self.processor)
+        # labels = self.processor.tokenizer(self.dataset[0]['txt_raw'], return_tensors="pt").input_ids
+        # print("Tokenized labels:", labels)
 
+        # print(self.dataset[0])
+        # exit(0)
         print('Length of Dataset' , len(self.dataset))
 
-        # 데이터셋 나누기 (80% Train, 20% Test)
         train_size = int(0.8 * len(self.dataset))
         test_size = len(self.dataset) - train_size
         self.train_dataset, self.test_dataset = torch.utils.data.random_split(self.dataset, [train_size, test_size])
 
-    def load_model(self):
-        model_name = "facebook/wav2vec2-base-960h"
+    def load_model(self, use_pretrained: bool):
+        if use_pretrained:
+            model_name = self.trained_model_path
+        else:
+            model_name = "facebook/wav2vec2-base-960h"
+
+        print(f"Used Model : {model_name}")
+
         self.processor = Wav2Vec2Processor.from_pretrained(model_name)
         self.model = Wav2Vec2ForCTC.from_pretrained(model_name)
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
     
     def compute_metrics(self, pred):
         pred_logits = pred.predictions
@@ -129,7 +159,6 @@ class ModelRunner:
         labels[labels == -100] = self.processor.tokenizer.pad_token_id
         references = self.processor.batch_decode(labels, group_tokens=False)
 
-        # 빈 문자열 참조 제거
         filtered_references = []
         filtered_predictions = []
 
@@ -137,57 +166,45 @@ class ModelRunner:
             if ref.strip() != "":
                 filtered_references.append(ref)
                 filtered_predictions.append(pred_text)
-            # ref가 빈 문자열이면 해당 pair는 무시
 
         if len(filtered_references) == 0:
-            # 모든 참조가 빈 문자열일 경우 WER 계산 불가
-            # 적절히 처리하거나 디폴트값 반환
-            return {"cer": 1.0}  # 혹은 {"cer": float('nan')}
+            return {"cer": 1.0} 
 
         cer = jiwer.wer(filtered_references, filtered_predictions)
         return {"cer": cer}
 
     def train(self):
-
-        # 2. DataCollator 정의
-        # DataCollator는 배치 데이터를 패딩하여 모델 입력에 맞게 만듭니다.
         data_collator = DataCollatorCTCWithPadding(processor=self.processor)
 
-        # 3. CER 계산 함수 정의
-
-        # 4. TrainingArguments 설정
         training_args = TrainingArguments(
-            output_dir="./results",                # 결과 저장 디렉토리
-            evaluation_strategy="epoch",          # 매 에포크마다 평가
-            learning_rate=3e-5,                   # 학습률
-            per_device_train_batch_size=16,        # 학습 배치 크기
-            per_device_eval_batch_size=16,         # 평가 배치 크기
-            num_train_epochs=10,                   # 학습 에포크 수
-            save_steps=500,                       # 모델 저장 빈도
-            save_total_limit=2,                   # 저장할 체크포인트 최대 개수
-            logging_dir="./logs",                 # 로그 디렉토리
-            logging_steps=50,                     # 로그 출력 간격
-            fp16=torch.cuda.is_available(),       # FP16 사용 (GPU 환경에서)
+            output_dir="./results",               
+            evaluation_strategy="epoch",        
+            learning_rate=3e-5,                  
+            per_device_train_batch_size=8,        
+            per_device_eval_batch_size=8,        
+            num_train_epochs=8,                
+            save_steps=500,                    
+            save_total_limit=10,                 
+            logging_dir="./logs",               
+            logging_steps=50,                  
+            fp16=torch.cuda.is_available(),       
         )
 
-        # 5. Trainer 생성
         trainer = Trainer(
-            model=self.model,                         # 학습할 모델
-            args=training_args,                  # 학습 설정
-            train_dataset=self.train_dataset,         # 학습 데이터셋
-            eval_dataset=self.test_dataset,           # 평가 데이터셋
-            data_collator=data_collator,         # 데이터 전처리(collation)
-            tokenizer=self.processor.feature_extractor,  # 토크나이저
-            compute_metrics=self.compute_metrics,     # 평가 지표
+            model=self.model,                      
+            args=training_args,                 
+            train_dataset=self.train_dataset,     
+            eval_dataset=self.test_dataset,          
+            data_collator=data_collator,       
+            tokenizer=self.processor.feature_extractor, 
+            compute_metrics=self.compute_metrics,    
         )
-
-        bef_results = trainer.evaluate()
 
         trainer.train()
-        aft_results = trainer.evaluate()
+        trainer.save_model(self.trained_model_path)
+        self.processor.save_pretrained(self.trained_model_path)
 
-        print(f"Evaluation results before train: {bef_results}")
-        print(f"Evaluation results after train: {aft_results}")
+        print(f"Model and processor saved to {self.trained_model_path}")
     
     def get_test_dataset_size(self):
         return len(self.test_dataset)
@@ -213,25 +230,19 @@ class ModelRunner:
         
         if post_processor is not None: pred_str = post_processor(pred_str)
 
-        # # 실제 라벨 디코딩
-        # # 라벨에서 -100 부분을 pad 토큰 id로 대체
-        # labels[labels == -100] = self.processor.tokenizer.pad_token_id
-        # ref_str = self.processor.batch_decode(labels, group_tokens=False)[0]
-
-        # print()
-        # print("예측 결과:", pred_str)
-        # print("이게 뭐지:", ref_str)
-        # print("실제 라벨:", raw_transcription)
-        # print()
+        if DEBUG:
+            print("예측 결과:", pred_str)
+            print("실제 라벨:", raw_transcription)
 
         return raw_transcription.lower(), pred_str.lower()
     
     def test_bulk(self, post_processor=None):
         test_dataset_size = self.get_test_dataset_size()
-        t = tqdm(total=test_dataset_size, desc="Prediction in progress")
 
-        prediction_result_file = "predictions.csv"
-        prediction_summary_file = "prediction-summary.txt"
+        save_dir = Path('./logs/result')
+        os.makedirs(save_dir, exist_ok=True)
+        prediction_result_file = save_dir / f"predictions_{self.use_pretrained}_{self.use_processor}.csv"
+        prediction_summary_file = save_dir /  f"prediction-summary_{self.use_pretrained}_{self.use_processor}.txt"
         columns = ['label', 'prediction', 'WER']
 
         wers = []
@@ -240,15 +251,13 @@ class ModelRunner:
             writer = csv.writer(file)
             writer.writerow(columns)
 
-            for i in range(test_dataset_size):
+            for i in tqdm(range(test_dataset_size), desc="Prediction in progress"):
                 label, prediction = self.test(i, post_processor)
 
                 wer = jiwer.wer(label.lower(), prediction.lower()) if label else (0.0 if prediction else 1.0)
                 
                 writer.writerow([label, prediction, wer])
                 wers.append(wer)
-                t.update(i)
-            t.close()
         
         with open(prediction_summary_file, mode="w", encoding="utf-8") as file:
             file.writelines([
@@ -257,20 +266,23 @@ class ModelRunner:
             ])
 
 import argparse
-argumentParser = argparse.ArgumentParser()
-argumentParser.add_argument("--train", action="store_true", help="Include this option to train the model. Otherwise model inference will be run.")
-argumentParser.add_argument("--bulk", action="store_true", help="When this is set, test will run in bulk on every test cases.")
-args = argumentParser.parse_args()
 
 if __name__ == "__main__":
-    runner = ModelRunner()
+    argumentParser = argparse.ArgumentParser()
+    argumentParser.add_argument("--train", action="store_true", help="Include this option to train the model. Otherwise model inference will be run.")
+    argumentParser.add_argument("--bulk", action="store_true", help="When this is set, test will run in bulk on every test cases.")
+    argumentParser.add_argument("--use_post_processor", action="store_true", help="When this is set, test will run in bulk on every test cases.")
+    argumentParser.add_argument("--use_pretrained_model", action="store_true", help="When this is set, test will run in bulk on every test cases.")
+    args = argumentParser.parse_args()
 
+    runner = ModelRunner(use_pretrained = args.use_pretrained_model, use_processor=args.use_post_processor)
     vocabularyMatcher = VocabularyMatcher('vocabularies.txt')
 
     if args.train:
         runner.train()
     else:
         if args.bulk: 
-            runner.test_bulk(post_processor=vocabularyMatcher.get_closest_words)
-            # runner.test_bulk()
-        else: runner.test(0)
+            post_processor = vocabularyMatcher.get_closest_words if args.use_post_processor else None
+            runner.test_bulk(post_processor = post_processor)
+        else: 
+            runner.test(0)

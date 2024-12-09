@@ -47,7 +47,7 @@ def clean_text(text):
     """
     # [#태그]와 [/#태그]를 제거하고 내용만 남김
     cleaned_text = re.sub(r'\[.*?\]', '', text)
-    return cleaned_text.strip()
+    return cleaned_text.strip().upper()
 
 class VocabularyMatcher:
     # WARNING: input vocabularies must be lowercased already
