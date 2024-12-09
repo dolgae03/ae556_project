@@ -1,0 +1,2 @@
+test dataset size: 176
+average WER: 0.967814311369703
