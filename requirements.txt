@@ -3,3 +3,4 @@ transformers[torch]
 pydub
 librosa
 jiwer
+Levenshtein

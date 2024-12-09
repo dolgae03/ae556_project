@@ -1,23 +1,28 @@
+from dataclasses import dataclass
+from typing import Any, Dict, List, Union
+
+import os, csv
+from pathlib import Path
+
+from tqdm import tqdm
+
+import jiwer, random
+from pydub import AudioSegment
+import numpy as np
+
+import torch
 from transformers import (
     Wav2Vec2Processor,
     Wav2Vec2ForCTC,
     TrainingArguments,
     Trainer,
-    DataCollatorWithPadding,
 )
-from src.utils import parse_xml_to_segments, clean_text
-from src.load_dataset import download_file, extract_tgz
-import torch, os
-from pydub import AudioSegment
-from pathlib import Path
-import librosa
-from pathlib import Path
 
 from src.SpeechDataset import SpeechDataset
+from src.load_dataset import download_file, extract_tgz
+from src.utils import parse_xml_to_segments, clean_text, VocabularyMatcher
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union
-import torch
+DEBUG = False
 
 @dataclass
 class DataCollatorCTCWithPadding:
@@ -25,12 +30,9 @@ class DataCollatorCTCWithPadding:
     padding: Union[bool, str] = True
 
     def __call__(self, features: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]:
-        # 오디오 부분 추출
         input_features = [{"input_values": feature["input_values"]} for feature in features]
-        # 라벨 부분 추출
         label_features = [feature["labels"] for feature in features]
 
-        # 오디오 입력 패딩
         batch = self.processor.feature_extractor.pad(
             input_features,
             padding=self.padding,
@@ -51,161 +53,236 @@ class DataCollatorCTCWithPadding:
         batch["labels"] = labels
         return batch
 
-from jiwer import wer
+class ModelRunner:
+    trained_model_path = "./results/trained_model"
 
-def compute_metrics(pred):
-    pred_logits = pred.predictions
-    pred_ids = torch.argmax(torch.tensor(pred_logits), dim=-1)
-    predictions = processor.batch_decode(pred_ids)
-    labels = pred.label_ids
+    def __init__(self, use_pretrained = False, use_processor = False):
+        self.use_pretrained = use_pretrained
+        self.use_processor = use_processor
 
-    labels[labels == -100] = processor.tokenizer.pad_token_id
-    references = processor.batch_decode(labels, group_tokens=False)
+        self.fix_seed()
+        self.load_model(use_pretrained)
+        self.prepare_data()
 
-    # 빈 문자열 참조 제거
-    filtered_references = []
-    filtered_predictions = []
-
-    for ref, pred_text in zip(references, predictions):
-        if ref.strip() != "":
-            filtered_references.append(ref)
-            filtered_predictions.append(pred_text)
-        # ref가 빈 문자열이면 해당 pair는 무시
-
-    if len(filtered_references) == 0:
-        # 모든 참조가 빈 문자열일 경우 WER 계산 불가
-        # 적절히 처리하거나 디폴트값 반환
-        return {"cer": 1.0}  # 혹은 {"cer": float('nan')}
-
-    cer = wer(filtered_references, filtered_predictions)
-    return {"cer": cer}
-
-url = "https://www.replaywell.com/atco2/download/ATCO2-ASRdataset-v1_beta.tgz"
-save_dir = Path('./data') 
-target_dir = save_dir / 'dataset_raw.tgz'
-unzip_dir = save_dir / 'dataset_unzip'
-audio_processed_dir = save_dir / 'dataset_processed/audio'
-text_processed_dir = save_dir / 'dataset_processed/text'
-
-os.makedirs(save_dir, exist_ok=True)
-os.makedirs(unzip_dir, exist_ok=True)
-os.makedirs(audio_processed_dir, exist_ok=True)
-os.makedirs(text_processed_dir, exist_ok=True)
-
-if not os.path.exists(target_dir):
-    download_file(url, target_dir)
-extract_tgz(target_dir, unzip_dir)
-
-base_dir = unzip_dir / 'ATCO2-ASRdataset-v1_beta/DATA'
-
-data_list = os.listdir(base_dir)
-data_list_without_ext = set([os.path.splitext(file_name)[0] for file_name in data_list])
-data_list_without_ext = list(data_list_without_ext)
-
-data_list_without_ext.sort()
-
-for idx, each_file_name in enumerate(data_list_without_ext, 0):
-    text_file = base_dir / f'{each_file_name}.xml'
-    audio_file = base_dir / f'{each_file_name}.wav'
-
-    with open(text_file) as f:
-        trasnscription = f.read()
-
-    audio = AudioSegment.from_wav(audio_file)
-    segments = parse_xml_to_segments(trasnscription)
+    def fix_seed(self, seed=42):
+        random.seed(seed)
+        np.random.seed(seed)
     
-    for segment_idx, segment in enumerate(segments):
-        start, end = segment['start'], segment['end']
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)  # Multi-GPU의 경우
+        
+        # PyTorch에서 Reproducibility 보장
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
-        segment_text = clean_text(segment['text'])
-        segment_audio = audio[start * 1000:end * 1000]
+    def prepare_data(self):
+        url = "https://www.replaywell.com/atco2/download/ATCO2-ASRdataset-v1_beta.tgz"
+        save_dir = Path('./data') 
+        target_dir = save_dir / 'dataset_raw.tgz'
+        unzip_dir = save_dir / 'dataset_unzip'
+        audio_processed_dir = save_dir / 'dataset_processed/audio'
+        text_processed_dir = save_dir / 'dataset_processed/text'
 
-        segment_audio_file = audio_processed_dir / f"data_{idx}_{segment_idx}.wav"
-        segment_audio.export(segment_audio_file, format="wav")
+        os.makedirs(save_dir, exist_ok=True)
+        os.makedirs(unzip_dir, exist_ok=True)
+        os.makedirs(audio_processed_dir, exist_ok=True)
+        os.makedirs(text_processed_dir, exist_ok=True)
+
+        if not os.path.exists(target_dir):
+            download_file(url, target_dir)
+        extract_tgz(target_dir, unzip_dir)
+
+        base_dir = unzip_dir / 'ATCO2-ASRdataset-v1_beta/DATA'
+
+        data_list = os.listdir(base_dir)
+        data_list_without_ext = set([os.path.splitext(file_name)[0] for file_name in data_list])
+        data_list_without_ext = list(data_list_without_ext)
+
+        data_list_without_ext.sort()
+
+        for idx, each_file_name in enumerate(data_list_without_ext, 0):
+            text_file = base_dir / f'{each_file_name}.xml'
+            audio_file = base_dir / f'{each_file_name}.wav'
+
+            with open(text_file) as f:
+                trasnscription = f.read()
+
+            audio = AudioSegment.from_wav(audio_file)
+            segments = parse_xml_to_segments(trasnscription)
+            
+            for segment_idx, segment in enumerate(segments):
+                start, end = segment['start'], segment['end']
+
+                segment_text = clean_text(segment['text'])
+                segment_audio = audio[start * 1000:end * 1000]
+
+                segment_audio_file = audio_processed_dir / f"data_{idx}_{segment_idx}.wav"
+                segment_audio.export(segment_audio_file, format="wav")
+            
+                segment_transcription_file = text_processed_dir / f"data_{idx}_{segment_idx}.txt"
+                with open(segment_transcription_file, 'w') as f:
+                    f.write(segment_text)
+        
+        self.dataset = SpeechDataset(audio_processed_dir, text_processed_dir, self.processor)
+        # labels = self.processor.tokenizer(self.dataset[0]['txt_raw'], return_tensors="pt").input_ids
+        # print("Tokenized labels:", labels)
+
+        # print(self.dataset[0])
+        # exit(0)
+        print('Length of Dataset' , len(self.dataset))
+
+        train_size = int(0.8 * len(self.dataset))
+        test_size = len(self.dataset) - train_size
+        self.train_dataset, self.test_dataset = torch.utils.data.random_split(self.dataset, [train_size, test_size])
+
+    def load_model(self, use_pretrained: bool):
+        if use_pretrained:
+            model_name = self.trained_model_path
+        else:
+            model_name = "facebook/wav2vec2-base-960h"
+
+        print(f"Used Model : {model_name}")
+
+        self.processor = Wav2Vec2Processor.from_pretrained(model_name)
+        self.model = Wav2Vec2ForCTC.from_pretrained(model_name)
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
     
-        segment_transcription_file = text_processed_dir / f"data_{idx}_{segment_idx}.txt"
-        with open(segment_transcription_file, 'w') as f:
-            f.write(segment_text)
+    def compute_metrics(self, pred):
+        pred_logits = pred.predictions
+        pred_ids = torch.argmax(torch.tensor(pred_logits), dim=-1)
+        predictions = self.processor.batch_decode(pred_ids)
+        labels = pred.label_ids
 
+        labels[labels == -100] = self.processor.tokenizer.pad_token_id
+        references = self.processor.batch_decode(labels, group_tokens=False)
 
-# Pretrained 모델과 토크나이저 불러오기
-model_name = "facebook/wav2vec2-base-960h"
-processor = Wav2Vec2Processor.from_pretrained(model_name)
-model = Wav2Vec2ForCTC.from_pretrained(model_name)
+        filtered_references = []
+        filtered_predictions = []
 
-# 데이터셋 생성
-dataset = SpeechDataset(audio_processed_dir, text_processed_dir, processor)
+        for ref, pred_text in zip(references, predictions):
+            if ref.strip() != "":
+                filtered_references.append(ref)
+                filtered_predictions.append(pred_text)
 
-print('Length of Dataset' , len(dataset))
+        if len(filtered_references) == 0:
+            return {"cer": 1.0} 
 
-# 데이터셋 나누기 (80% Train, 20% Test)
-train_size = int(0.8 * len(dataset))
-test_size = len(dataset) - train_size
-train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+        cer = jiwer.wer(filtered_references, filtered_predictions)
+        return {"cer": cer}
 
-# 2. DataCollator 정의
-# DataCollator는 배치 데이터를 패딩하여 모델 입력에 맞게 만듭니다.
-data_collator = DataCollatorCTCWithPadding(processor=processor)
+    def train(self):
+        data_collator = DataCollatorCTCWithPadding(processor=self.processor)
 
-# 3. CER 계산 함수 정의
+        training_args = TrainingArguments(
+            output_dir="./results",               
+            evaluation_strategy="epoch",        
+            learning_rate=3e-5,                  
+            per_device_train_batch_size=8,        
+            per_device_eval_batch_size=8,        
+            num_train_epochs=8,                
+            save_steps=500,                    
+            save_total_limit=10,                 
+            logging_dir="./logs",               
+            logging_steps=50,                  
+            fp16=torch.cuda.is_available(),       
+        )
 
-# 4. TrainingArguments 설정
-training_args = TrainingArguments(
-    output_dir="./results",                # 결과 저장 디렉토리
-    evaluation_strategy="epoch",          # 매 에포크마다 평가
-    learning_rate=3e-5,                   # 학습률
-    per_device_train_batch_size=16,        # 학습 배치 크기
-    per_device_eval_batch_size=16,         # 평가 배치 크기
-    num_train_epochs=10,                   # 학습 에포크 수
-    save_steps=500,                       # 모델 저장 빈도
-    save_total_limit=2,                   # 저장할 체크포인트 최대 개수
-    logging_dir="./logs",                 # 로그 디렉토리
-    logging_steps=50,                     # 로그 출력 간격
-    fp16=torch.cuda.is_available(),       # FP16 사용 (GPU 환경에서)
-)
+        trainer = Trainer(
+            model=self.model,                      
+            args=training_args,                 
+            train_dataset=self.train_dataset,     
+            eval_dataset=self.test_dataset,          
+            data_collator=data_collator,       
+            tokenizer=self.processor.feature_extractor, 
+            compute_metrics=self.compute_metrics,    
+        )
 
-# 5. Trainer 생성
-trainer = Trainer(
-    model=model,                         # 학습할 모델
-    args=training_args,                  # 학습 설정
-    train_dataset=train_dataset,         # 학습 데이터셋
-    eval_dataset=test_dataset,           # 평가 데이터셋
-    data_collator=data_collator,         # 데이터 전처리(collation)
-    tokenizer=processor.feature_extractor,  # 토크나이저
-    compute_metrics=compute_metrics,     # 평가 지표
-)
+        trainer.train()
+        trainer.save_model(self.trained_model_path)
+        self.processor.save_pretrained(self.trained_model_path)
 
-bef_results = trainer.evaluate()
+        print(f"Model and processor saved to {self.trained_model_path}")
+    
+    def get_test_dataset_size(self):
+        return len(self.test_dataset)
 
+    def test(self, sample_index, post_processor=None):
+        sample = self.test_dataset[sample_index]
 
-trainer.train()
-aft_results = trainer.evaluate()
+        # 모델 입력 준비
+        input_values = sample["input_values"].unsqueeze(0).to(self.model.device)
+        attention_mask = sample["attention_mask"].unsqueeze(0).to(self.model.device)
+        labels = sample["labels"].unsqueeze(0)
+        raw_transcription = sample['txt_raw']
 
-print(f"Evaluation results before train: {bef_results}")
-print(f"Evaluation results after train: {aft_results}")
+        # 모델 추론
+        with torch.no_grad():
+            logits = self.model(input_values, attention_mask=attention_mask).logits
 
-# sample = test_dataset[0]
+        # 예측된 토큰 ID
+        pred_ids = torch.argmax(logits, dim=-1)
 
-# # 모델 입력 준비
-# input_values = sample["input_values"].unsqueeze(0).to(model.device)
-# attention_mask = sample["attention_mask"].unsqueeze(0).to(model.device)
-# labels = sample["labels"].unsqueeze(0)
-# raw_transcription = sample['txt_raw']
+        # 예측 문자열 디코딩
+        pred_str = self.processor.batch_decode(pred_ids)[0]
+        
+        if post_processor is not None: pred_str = post_processor(pred_str)
 
-# # 모델 추론
-# with torch.no_grad():
-#     logits = model(input_values, attention_mask=attention_mask).logits
+        if DEBUG:
+            print("예측 결과:", pred_str)
+            print("실제 라벨:", raw_transcription)
 
-# # 예측된 토큰 ID
-# pred_ids = torch.argmax(logits, dim=-1)
+        return raw_transcription.lower(), pred_str.lower()
+    
+    def test_bulk(self, post_processor=None):
+        test_dataset_size = self.get_test_dataset_size()
 
-# # 예측 문자열 디코딩
-# pred_str = processor.batch_decode(pred_ids)[0]
+        save_dir = Path('./logs/result')
+        os.makedirs(save_dir, exist_ok=True)
+        prediction_result_file = save_dir / f"predictions_{self.use_pretrained}_{self.use_processor}.csv"
+        prediction_summary_file = save_dir /  f"prediction-summary_{self.use_pretrained}_{self.use_processor}.txt"
+        columns = ['label', 'prediction', 'WER']
 
-# # 실제 라벨 디코딩
-# # 라벨에서 -100 부분을 pad 토큰 id로 대체
-# labels[labels == -100] = processor.tokenizer.pad_token_id
-# ref_str = processor.batch_decode(labels, group_tokens=False)[0]
+        wers = []
 
-# print("예측 결과:", pred_str)
-# print("실제 라벨:", raw_transcription)
+        with open(prediction_result_file, mode="w", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(columns)
+
+            for i in tqdm(range(test_dataset_size), desc="Prediction in progress"):
+                label, prediction = self.test(i, post_processor)
+
+                wer = jiwer.wer(label.lower(), prediction.lower()) if label else (0.0 if prediction else 1.0)
+                
+                writer.writerow([label, prediction, wer])
+                wers.append(wer)
+        
+        with open(prediction_summary_file, mode="w", encoding="utf-8") as file:
+            file.writelines([
+                "test dataset size: " + str(test_dataset_size) + '\n',
+                "average WER: " + str(sum(wers) / len(wers))
+            ])
+
+import argparse
+
+if __name__ == "__main__":
+    argumentParser = argparse.ArgumentParser()
+    argumentParser.add_argument("--train", action="store_true", help="Include this option to train the model. Otherwise model inference will be run.")
+    argumentParser.add_argument("--bulk", action="store_true", help="When this is set, test will run in bulk on every test cases.")
+    argumentParser.add_argument("--use_post_processor", action="store_true", help="When this is set, test will run in bulk on every test cases.")
+    argumentParser.add_argument("--use_pretrained_model", action="store_true", help="When this is set, test will run in bulk on every test cases.")
+    args = argumentParser.parse_args()
+
+    runner = ModelRunner(use_pretrained = args.use_pretrained_model, use_processor=args.use_post_processor)
+    vocabularyMatcher = VocabularyMatcher('vocabularies.txt')
+
+    if args.train:
+        runner.train()
+    else:
+        if args.bulk: 
+            post_processor = vocabularyMatcher.get_closest_words if args.use_post_processor else None
+            runner.test_bulk(post_processor = post_processor)
+        else: 
+            runner.test(0)
