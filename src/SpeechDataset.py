@@ -39,5 +39,6 @@ class SpeechDataset(Dataset):
             "input_values": inputs.input_values.squeeze(0),
             "attention_mask": inputs.attention_mask.squeeze(0),
             "labels": self.processor.tokenizer(transcript, return_tensors="pt").input_ids.squeeze(0),
-            "txt_raw": transcript
+            "txt_raw": transcript,
+            "file_path" : text_path
         }

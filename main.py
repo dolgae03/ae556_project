@@ -265,12 +265,81 @@ class ModelRunner:
                 "average WER: " + str(sum(wers) / len(wers))
             ])
 
+    def test_whisper(self, post_processor=None):
+        import pickle
+        
+        with open('./logs/result/whisper.pkl', 'rb') as f:
+            whisper_dic = pickle.load(f)
+
+        test_dataset_size = self.get_test_dataset_size()
+
+        save_dir = Path('./logs/result')
+        os.makedirs(save_dir, exist_ok=True)
+        prediction_result_file = save_dir / f"predictions_whiseper_{self.use_processor}.csv"
+        prediction_summary_file = save_dir /  f"prediction-summary_whiseper_{self.use_processor}.txt"
+        columns = ['label', 'prediction', 'WER']
+
+        wers = []
+
+        with open(prediction_result_file, mode="w", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(columns)
+
+            for i in tqdm(range(test_dataset_size), desc="Prediction in progress"):
+                sample = self.test_dataset[i]
+                label, file_path = sample['txt_raw'], sample['file_path']
+                file_name = Path(file_path).stem
+
+                prediction = self.clean_whisper_text(whisper_dic[file_name][1])
+                if post_processor is not None: prediction = post_processor(prediction)
+
+                wer = jiwer.wer(label.lower(), prediction.lower()) if label else (0.0 if prediction else 1.0)
+                
+                writer.writerow([label.lower(), prediction.lower(), wer])
+                wers.append(wer)
+
+        with open(prediction_summary_file, mode="w", encoding="utf-8") as file:
+            file.writelines([
+                "test dataset size: " + str(test_dataset_size) + '\n',
+                "average WER: " + str(sum(wers) / len(wers))
+            ])
+        
+    @staticmethod
+    def clean_whisper_text(raw_text):
+        number_dict = {
+            "0": "ZERO",
+            "1": "ONE",
+            "2": "TWO",
+            "3": "THREE",
+            "4": "FOUR",
+            "5": "FIVE",
+            "6": "SIX",
+            "7": "SEVEN",
+            "8": "EIGHT",
+            "9": "NINE"
+        }
+
+        processed_text = raw_text.strip()
+        processed_text = processed_text.replace(',', '').replace('.', '')
+
+        result_str = ''
+
+        for each_char in processed_text:
+            if each_char in number_dict:
+                result_str += number_dict[each_char] + ' '
+            else:
+                result_str += each_char.upper()
+
+        result_str = result_str.replace('  ', ' ')
+
+        return result_str.strip()
 import argparse
 
 if __name__ == "__main__":
     argumentParser = argparse.ArgumentParser()
     argumentParser.add_argument("--train", action="store_true", help="Include this option to train the model. Otherwise model inference will be run.")
     argumentParser.add_argument("--bulk", action="store_true", help="When this is set, test will run in bulk on every test cases.")
+    argumentParser.add_argument("--whisper", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     argumentParser.add_argument("--use_post_processor", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     argumentParser.add_argument("--use_pretrained_model", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     args = argumentParser.parse_args()
@@ -280,6 +349,9 @@ if __name__ == "__main__":
 
     if args.train:
         runner.train()
+    elif args.whisper:
+        post_processor = vocabularyMatcher.get_closest_words if args.use_post_processor else None
+        runner.test_whisper(post_processor = post_processor)
     else:
         if args.bulk: 
             post_processor = vocabularyMatcher.get_closest_words if args.use_post_processor else None
