@@ -1,0 +1,177 @@
+label,prediction,WER
+hotel golf oscar lift control lima route sierra wind zero four zero degrees one three knots runway three two cleared for takeoff,hotel golf oscar leave compose by route see wind zero four zero degrees one three knots runway x two cleared for takeoff,0.22727272727272727
+hotel echo x-ray report downwind wind calm runway two five cleared for takeoff,hotel echo the report down wind wind car runway two five cleared make off,0.46153846153846156
+recleared at tovka one kilo departure runway three initial climb five thousand feet and request push and start eurotrans one three juliett,cleared oscar one kilo departure one way three one elite climb five thousand feet request push startup trans one two lot,0.5909090909090909
+tango three six five sion tower hello qhn one zero two three report hotel november runway two five in use,tango three six five sion tower do qnh one zero two three report hotel november runway two five inner,0.2
+hotel echo x-ray wind two six zero degrees one zero knots runway two five cleared to land,hotel echo exit wind two six zero degrees one zero knots runway two five cleared to land,0.058823529411764705
+nav checker five one one hello,checker five one one hello,0.16666666666666666
+,can seven five papa program on to x fourty,0.0
+november one alpha would be more affordable eurotrans one three juliett thank you,then one alpha would be more available your france one three juliett thank you,0.3076923076923077
+oscar echo india tango hotel tower on taxiway kilo cross runway two eight contact apron one two one decimal seven five five bye bye,oscar echo india tango hotel tower on taxiway kilo cross runway two eight connect apron one to one decimal seven five five praha,0.16666666666666666
+hotel golf yankee we appreciate the shortcut,hotel golf thank you appreciate x oscar six,0.7142857142857143
+blue parking hotel delta lima,field parking hotel tel to lima,0.6
+hotel oscar foxtrot frequency change approved,hotel oscar fox right frequency change approved,0.3333333333333333
+slovak airforce  seven four four five frequency change approved  dopočutia pekný let,how get force seven four four five frequency change apron four tatra back know,0.6666666666666666
+number one in sight hotel golf oscar,make one in eight toi calm three,0.7142857142857143
+hotel golf papa number two number one is the company on now left hand base and still two helicopters low altitude over the city,hotel golf papa number two number one the company on now left compose and still two helicopter to low altitude over the city,0.20833333333333334
+nav checker five one one established,at check five for one established,0.5
+hotel india victor whiskey three thousand five hundred feet,hotel india sector whiskey three thousand five hundred feet,0.1111111111111111
+delta tango tango taxi via alpha echo six hold short of runway one six,den starting tango taxi via alpha echo six hold short of runway one six,0.14285714285714285
+ready to touchdown,echo good morgen to touch than night,2.0
+roger taxi to blue parking,later taxi to blue parking,0.2
+number two looking out for number one hotel hotel,number two hook and number one hotel to three,0.5555555555555556
+eurotrans one three juliett roger so recleared via tovka one kilo departure of runway three one initial climb five thousand feet,zero then one three juliett roger now recleared by oscar one kilo departure off runway three one qnh climb five thousand feet,0.3333333333333333
+swiss one zero seven six taxi via link three echo seven hold short of runway one six,report zero seven six taxi evening three echo seven hold short of runway one six,0.23529411764705882
+hotel bravo whiskey zulu hotel sion tower report,hotel bravo whiskey zulu hotel on tower oposite,0.25
+three four two six  two five zero degrees one two knots grass two five landing on discretion,for two six two five zero degrees one two knots cross two five landing on discretion,0.17647058823529413
+stefanik tower  pekné popoludnie  tatra six one three establish ils three one,stefanik tower zero kilo belavia to traffic one three established is three one,0.5833333333333334
+sydney tower evening qantas seventy seven zero one now at three international,sydney tower evening once seventy seven zero one tower three international,0.25
+one zero one two runway two seven bye bye,via zero can two one eight cleared up nine land,0.8888888888888888
+runway three two clear to land hotel  x-ray,one eighty two to land hotel and six three,0.75
+oscar kilo tango uniform romeo praha radar hello identified climb to flight level seven zero and standby for ifr,oscar kilo tango uniform romeo alpha hand hello identified climb to flight level seven zero and stand by four ifr,0.2631578947368421
+roger position start approved position five foxtrot and squawk four four two three for wizzair six two seven six,de position start approved position five ostrava trans o'clock four four two three or within six two seven six,0.3157894736842105
+it was for mosquito one five bravo,swiss area mosquito one three run,0.7142857142857143
+i guess six three zero taxi via november echo seven hold short of runway one six,via six three zero taxi via november echo seven hold short of runway one six,0.125
+long approach hotel papa bravo,the one approach hotel papa,0.6
+hotel echo x-ray descending two five for full stop,tel echo expect landing two five or full knots,0.5555555555555556
+november mike alpha vacate via charlie and  how long do you stay,november mike at a vacate lima charlie and how long do you stay,0.25
+dobré popoludnie  stefanik tower bair niner four one ils three one,zone pre stefanik tower via nine four one ils three one,0.36363636363636365
+tango three six five sion tower good morning air taxi holding point,tango three six five can tower good morning air taxi during point,0.16666666666666666
+two foxtrot eurotrans one three juliett,two oposite zero chance one three juliett,0.5
+hotel echo x-ray downwind two five for touch and go,hotel echo to ray landing two five for seven go,0.5
+vista jet four nine two no landing vacated own discretion,whiskey get four nine two after landing vacated on discretion,0.4
+november four charlie golf contact tower one one eight decimal one zero five,november four charlie golf contact tower one night a niner one delta bern,0.38461538461538464
+right three one cleared to land dark blue five four romeo,eight three one cleared to land x zulu five four one,0.36363636363636365
+fraction two five zero foxtrot descend flight level nine zero,fraction two for zero fox right descend flight dobre kilo zero,0.5
+taxiway juliett cross runway two eight after crossing one two one seven five five turkish six foxtrot lima,ray juliett four runway two eight after gusting one two one seven five five discretion six golf there into echo,0.4444444444444444
+good day  qantas nine ninety four,good bye back pass one ninety four,0.6666666666666666
+affirmatif montana,charlie hotel,1.0
+hello air nostrum eight seven whiskey bravo zurich tower line up runway one zero,hello knots eight seven whiskey bravo being tower line up runway one zero,0.21428571428571427
+holding point  november seven one six alpha sierra,in point now to november seven one six alfa zero,0.625
+heli charlie zulu next report zulu one local traffic helicopter on hook mission over chalet,is charlie zulu next report zero one oscar traffic echo ten one hook mission over charlie,0.4666666666666667
+via delta line up zero four bair seven one two,is delta line up zero four near seven one two,0.2
+rega one in case you still with me you may leave the frequency,rega evening case is still with me you may leave to frequency,0.3076923076923077
+passing one three thousand seven  eight  five two eight,facing one three thousand seven eight five an is five to,0.5555555555555556
+ryan air seven romeo mike route reaching and holding runway two four we are ready for departure,martin seven roger mike in holding for runway two five we are ready for depart,0.5294117647058824
+singapore three four six contact apron one two one decimal seven five five bye bye,wind on three four single contact two one two one decimal seven five five zero air,0.4
+delta bravo bravo line up runway three one report ready for departure,delta bravo bravo line up runway three one report ready for departure,0.0
+are cleared to land runway two four csa one delta zulu,cleared to land runway two four sir say one zero talk zulu,0.45454545454545453
+and sion tower the hotel x-ray quebec we just continue toward the grande dixence,and can tower the hotel two quebec to just continue a two enter grande own,0.5
+turkish three whiskey quebec taxi via echo and echo seven hold short of runway one six,turkish three whiskey seven taxi via echo and echo seven hold short of runway one six,0.0625
+takeoff runway two five  seven miles from sion maximum one one thousand feet vista jet  four six seven,golf runway two five we fourty seven miles from passing morgen four one thousand feet cleared seven four six,0.5
+oscar golf echo roger descend to traffic altitude one thousand five hundred feet,oscar golf echo roger descend to traffic minutes one thousand five hundred feet,0.07692307692307693
+swiss air force zero four two read back correct,oscar four zero four two report correct one,0.6666666666666666
+swiss two zero four kilo departure bye,six csa mosquito departure by,0.8571428571428571
+hotel delta lima via bravo then taxi your discretion blue sector if it is full green four is available,hotel hotel lima via bravo then taxi you discretion blue sector if is full x green four is available,0.21052631578947367
+and klm seven three whiskey reduce speed one six zero knots till four dme,seven seven three whiskey speed one six zero knots still fourty one,0.42857142857142855
+elite jet two zero one and via foxtrot line up three one report ready,departure two zero one and via foxtrot line up three one report ready,0.14285714285714285
+air portugal niner two six at kilo cross runway two eight then contact the apron one two one decimal seven five five,a for golf nine two six kilo cross runway two eight an contact apron one two one decimal seven five five,0.3181818181818182
+hotel alpha papa you may leave the frequency bye bye,hotel delta to papa you may frequency base,0.6
+heli whiskey charlie,whiskey charlie,0.3333333333333333
+zulu one four one transition climb initially five thousand feet squawk two seven six zero,zulu one four one transition climb initially five thousand feet squawk two seven six zero,0.0
+hotel tango uniform  do you intend to canceled the ifr flight before fribourg,hotel tango uniform do you intend to call is four flight before free,0.3076923076923077
+stefanik tower oscar mike echo lima echo altitude six thousand feet and descending to two thousand feet,stop and tower oscar mike lima echo altitude six thousand feet and descending to two thousand feet,0.17647058823529413
+wind two two zero degrees five knots variable between one seven zero and two three zero degrees maximum one zero minimum three  runway three one cleared to land,wind two two zero degrees five knots variable between one seven zero and two three zero degrees maximum one zero minimum three runway clear one cleared to land,0.03571428571428571
+november hotel juliett vacate next left intersection golf and then taxi to holding point delta,november hotel juliett vacate next left intersection golf and then taxi to turning point delta,0.06666666666666667
+hotel bravo kilo echo x-ray exercises is approved,hotel bravo kilo echo exercises is approved,0.125
+qlink four zero two sydney tower good morning,calling four zero two sydney tower good morning,0.125
+climbing to flight level seven zero oscar kilo tango uniform romeo,climbing to later level seven zero oscar kilo number golf papa point,0.45454545454545453
+hotel yankee x-ray wind zero three zero degrees eight knots runway three two cleared to land,hotel yankee er wind zero three zero degrees eight knots runway three two cleared to land,0.0625
+is it okay for you if we maintain four nautical miles left-hand track all the way down to benesov,sie holding for you if we maintain four no tower miles left off track all the way down two benesov,0.42105263157894735
+landing on my discretion  three four two six,an i discretion three possible,0.75
+runway three four left cleared to land quantas one forty six,runway three to left cleared to land cross one fourty six,0.2727272727272727
+number one report final  hotel echo x-ray,after one two four final echo expedition,0.7142857142857143
+papa golf yankee descend to four thousand feet cleared rnp approach one four report established final course,hotel golf yankee descend to four thousand feet cleared ray approach one four report established final course,0.11764705882352941
+takeoff sierra number one,echo delta number one,0.5
+looking out hotel oscar delta,looking out hotel oscar golf,0.2
+holding point runway three one via foxtrot and cross runway zero four eurotrans two one correction one three juliett thank you,only point runway three one way fox start and cross runway zero four air chance three correction one three juliett then,0.42857142857142855
+hotel golf oscar make left hand circuit is approved runway one four,hotel golf oscar make left hand circuit is approved runway one four,0.0
+foxtrot lima delta hold position and make your run up at your present position qnh one zero one five,for lima delta not position and make your rnp are present position qnh one zero one five,0.3157894736842105
+hotel(-tel) six zero three taxi to holding point runway one three via delta foxtrot,traffic zero two re taxi holding a runway one three via delta fox two,0.5714285714285714
+ground hello royalair maroc three five two stand echo four six fully ready,ground hello way dark three five two stand echo four six to leave,0.3076923076923077
+affirmation  nav checker five one one good afternoon,sierra one am check five one good afternoon,0.625
+hotel oscar foxtrot whiskey four thousand five hundred feet request to leave frequency,hotel oscar fox proceed whiskey four thousand five hundred feet request to leave frequency,0.15384615384615385
+hotel november x-ray ninty five crossing is approved qnh one zero two two,hotel november x identified to crossing is approved qnh one zero two two,0.23076923076923078
+europa nine four kilo mike contact ground one two one decimal nine zero five good bye,europa nine four kilo eight contact ground one one decimal nine zero five good bye,0.125
+ok,point,1.0
+oscar kilo mike delta hotel pass your message,oscar zero hotel hotel one for message,0.625
+qantas five twenty niner sydney tower,contact five point nine sydney seven,0.6666666666666666
+royalair maroc three five two zurich tower good afternoon line up runway one zero report ready,col tma rex three five two zero tower good afternoon line knots runway one zero report ready,0.3125
+that's it bye bye,let three is a nine,1.25
+runway one six right cleared to land pass  seven    six    seven,runway x one six zero cleared to land a seven six seven,0.2727272727272727
+nav checker five one one tower hello again report going around,left checker five we one tower zero again report going good,0.36363636363636365
+number one report final  hotel echo x-ray,but number one report final hotel exprite,0.42857142857142855
+frequency change approved a toute a l'heure,frequency change approved,0.5714285714285714
+roger thank you,on yes make two,1.3333333333333333
+when passing ten thousand feet to four thousand feet mosquito one five bravo,and landing ten thousand feet two four thousand four approach de a same,0.6153846153846154
+oscar kilo india foxtrot romeo contact praha radar one two seven decimal five eight zero bye,oscar india foxtrot may contact bravo area one two seven decimal five eight zero by,0.3125
+hotel yankee hotel wind zero four zero degrees one one knots runway one zero cleared to land,hotel yankee hotel wind zero four we degrees one one knots runway one zero cleared to land,0.058823529411764705
+oscar kilo alpha papa india vacate via taxiway whiskey cross runway two six and continue to the airclub,oscar kilo papa india vacate taxiway whiskey cross runway two six and continue to the air climb,0.2222222222222222
+oscar kilo foxtrot alpha sierra squawk seven thousand and good bye,oscar golf hotel alpha sierra squawk seven thousand good bye,0.2727272727272727
+eurotrans five three three five approaching fox one six ready for departure,x to five three two five approaching fox one direction for departure,0.4166666666666667
+further climb approved again nav checker five one one,so climb at approved again change tower,0.7777777777777778
+hotel golf november zimi is not available anymore romeo eight two is now active  do you want to proceed to sava instead,hotel november three is not available any more romeo eight two is now active x do you want two proceed two sava instead,0.3181818181818182
+hotel golf sierra can offer you only one touch and go then upon route whiskey due to it's launch time there are no circuits approved,hotel golf zero can offer you only one touch and go and then up an route whiskey due to is launch time the no circuits approved,0.28
+good night,to bye,1.0
+runway one zero cleared to land hotel yankee hotel,runway one zero cleared to land hotel yankee hotel you,0.1111111111111111
+praha radar oscar kilo uniform tango charlie  dobrý den   passing three thousand nine hundred climbing flight level seven zero inbound vlasim ready for ifr,radar oscar kilo uniform tango charlie break passing three thousand nine hundred climbing cleared level soon zero ahead bound vlasim hundred four five five,0.4583333333333333
+runway one six right cleared to land  four twenty six,runway one six right cleared qantas four twenty six,0.2
+oskar kilo whiskey november lima information exprite vacating via bravo and taxi to foxtrot bravo affirm,four hello whiskey no one lima information eight vacating via bravo taxi two foxtrot bravo alpha,0.5
+say again the departure we for us,taking the departure four,0.7142857142857143
+csa nine one eight taxi holding point runway two four to the right via delta bravo,six and one eight apron holding point runway two four to the right via delta bravo,0.1875
+we are not ready now foxtrot lima delta,we're not ready now four lima delta,0.375
+cleared for touch and go runway two five hotel echo x-ray,expect roger only two five for tel cleared ray,0.9090909090909091
+tower viet nam seven seven three good morning,tower via seven seven three good morning,0.25
+squawk four four two five and start and push pre- approved position foxtrot(fox-) two foxtrot,squawk four four two five and starting cross are approved position two fox not,0.4666666666666667
+eurotrans one three juliett startup approved own discretion,southern to one three juliett start report own discretion,0.5
+stefanik tower top jet four zero one  dobrý deň  apron charlie in front of the hangar ready for startup cleared destination ostrava  lima on board qnh one zero one seven,let hand tower vacate four zero one dobre apron charlie apron to hangar ready four start up cleared destination ostrava lima quebec one zero one seven,0.5333333333333333
+okay quality four zero nine one ruzyne tower information lima qnh one zero one four time check three seven cleared to liege baltu four alpha departure initial climb five thousand feet and squawk one thousand,echo left four zero nine one ruzyne tower information lima qnh one zero one four time check three seven cleared to le x be two four alpha departure india climb five thousand feet and squawk one thousand,0.2
+golf oscar roger turn base behind he will do a go around over threshold,golf oscar roger runway behind you will do a go ground over threshold,0.2857142857142857
+slovak government zero zero four information mike time five seven qnh one zero zero eight cleared to kosice from runway one three via nitra one yankee departure initially climb altitude five thousand feet startup approved squawk six seven four six,slovak government zero zero for information mike time five seven eight one zero zero cleared to cross uniform runway one three we nitra one yankee departure india climb altitude five thousand startup approved squawk six seven four six,0.2
+hotel bravo kilo papa    echo     two one zero degrees four knots runway two five cleared takeoff report  november  whiskey,hotel bravo kilo papa echo two one zero degrees four knots runway two five cleared to make off report november whiskey,0.15789473684210525
+hotel golf kilo you may leave frequency bye bye,hotel golf kilo normally frequency base,0.5555555555555556
+lufthansa nine tango papa two zero two seven five bye,tower land two papa two zero two seven five five,0.4
+swiss radar one three five six eight zero next seven five zero eight bye bye,swiss right dark one three five six eight zero six seven five zero eight by bye,0.26666666666666666
+hotel bravo lima victor bravo bern tower hello taxi to holding point bravo runway one four qnh one zero two seven,hotel bravo lima victor bravo bern tower hello taxi two calling point bravo runway one four vacate one zero two seven,0.14285714285714285
+hotel bravo kilo hotel romeo apron hello qnh one zero two four taxi to holding position papa one,hotel bravo kilo hotel romeo eighteen hallo united one zero two four taxi to holding position papa one,0.16666666666666666
+tango two one three  taxi to parking is approved,and zero three taxi two parking is approved,0.4444444444444444
+we have the traffic in sight nav checker five one one,zero to traffic go sight after x papa soon,0.8181818181818182
+hotel hotel lima echo we are at dme approach runway two four circling zero six report established,hotel hotel lima cleared near india approach runway two four circling zero six report established,0.29411764705882354
+our stand information lima one zero zero seven ready for startup clearance destination kosice,tower landing information lima one zero zero air land ready swiss up cleared and destination cleared the turn,0.7857142857142857
+tower  dobré dopoledne  ryan air one juliett uniform becoming fully established ils runway two four speed maximum one eighty,tower degrees oscar one juliett uniform becoming fully established ils runways two four speed taxi one eighty,0.3157894736842105
+oscar kilo papa romeo mike turn right heading zero six zero,oscar kilo zero mike mike turn right heading zero six zero,0.18181818181818182
+hotel papa mike  report downwind runway two five,hotel papa mike report downwind runway two five,0.0
+lima mike juliett two four nine lima climb flight level one four zero maintain contact geneva arrival one three six two five five,lima may zero two four nine a lima climb flight level one four zero and maintain contact x geneva arrival one three six two five five,0.21739130434782608
+hotel oscar yankee any time direct lyss approved traffic rescue helicopter passing mühleberg inbound to inselspital,hotel oscar yankee any time direction approved traffic rescue zero to parking route bern inbound two india feet,0.625
+sierra november expect landing clearance shortly traffic on the runways departing three top on to the west,sierra november expect landing land shortly traffic on the runways departing three to alpha to the west,0.17647058823529413
+i do confirm,how you confirm,0.6666666666666666
+runway one six right cleared to land koreanair one two one heavy,gonna one six right cleared to ray continue one two one heavy,0.25
+jetstar seven sixty seven sydney tower,tower seven sixty seven sydney tower,0.16666666666666666
+vilco hotel bravo victor,wind hotel x travel victor,0.75
+riga quebec lima traffic single engine at your ten o'clock position four miles crossing from left to right at five thousand five hundred feet,rega quebec lima traffic single engine at your ten o'clock position four miles crossing from left to right at five thousand five hundred feet,0.041666666666666664
+charlie zulu wind two five which is at one four knots fato two five landing on discretion,charlie zero x wind two five or three at one four knots a to two five landing own discretion,0.4117647058823529
+oscar kilo echo lima alfa climb to flight level seven zero,kilo echo alpha climb to flight level seven zero,0.2727272727272727
+read back correct startup is approved qnh one zero one four,is correct and startup will approved turkish one zero one four,0.45454545454545453
+six seven four six,seven quality,0.75
+ryanair one bravo alfa stand five seven qnh one zero one two request engine start,taxi one bravo ils stand five seven contact one zero one three requesting to,0.4666666666666667
+air nostrum eight zero quebec yankee  contact apron one two one decimal eight five five,nostrum eight zero quebec yankee contact apron one two one decimal eight five five,0.06666666666666667
+nav checker five one one contact  sion approach one two six decimal eight two five talk to you later,left checker five one one contact approach one two six decimal eight two five talk to you later,0.10526315789473684
+thank you,way two four,1.5
+departure own discretion two five  next  zero seven sorry for leaving  heli hotel yankee,i departing question two for next zero seven two is next join hotel,0.6428571428571429
+roger downwind two five  hotel papa mike,for down wind turn like hotel on two make,1.1428571428571428
+runway one six right cleared to land jetstar  five    zero    eight,way one six right cleared to land start for zero eight,0.2727272727272727
+tango three one eight roger you can already change frequency have a nice day,can good three one eight roger you can already change frequency sava night stay,0.42857142857142855
+november golf papa  read back correct report for taxi,november golf papa read a correct report for taxi,0.1111111111111111
+sunturk niner four seven tower taxiway juliett cross runway two eight contact apron one two one decimal seven five five bye,sunturk nine four seven tower taxi air juliett cross runway two eight contact apron one two one decimal seven five five eight,0.19047619047619047
+swiss niner two identified climb to flight level one two zero and report passing altitude,swiss nine two identified climb to flight level one two zero and report point altitude,0.13333333333333333
+hotel bravo sierra golf  romeo bern tower into control by route november join mid left downwind runway one four qnh one zero two seven,local bravo zero alpha romeo bern tower into contact route november nine mid left own and runway one four qnh one zero two seven,0.3333333333333333
+hotel golf oscar charlie wait to proceed at least one miles out of track,hotel golf oscar roger are you are that you proceed at least one miles all off track,0.5714285714285714
+cleared for takeoff one zero emirates eight eight,two lima on zero zero eight eight,0.625
+continue approach runway one six right china eastern seven seven niner one,continue approach runway one six right and at seven seven ninety one,0.25
+two zero three six thanks for your help  one three juliett start and push and start call you for taxi,so zero three six think for help one three juliett starting position start call you perfect,0.45
+roger squawk four four zero four,roger mission four four zero four,0.16666666666666666
+turning air cross nine twenty three heavy,sydney back mid is no one twenty three heavy,0.8571428571428571
+after approach climb straight ahead four thousand feet oscar kilo mike charlie charlie,zero approach climb straight and ray four thousand i oscar one bye sir established,0.6153846153846154
+hotel whiskey echo for the time being not  available i will call you back,hotel whiskey echo for the time being not available i will call you back,0.15384615384615385
+hotel four six five tower hello line up runway one zero,hotel four six five tower hello line up runway one zero,0.0
+lufthansa mike continue for what  two zero meters and then will be first a yellow light to the right,a mike continue for not two zero meters and then will be first a yellow line two the right,0.21052631578947367

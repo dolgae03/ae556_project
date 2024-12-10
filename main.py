@@ -54,11 +54,11 @@ class DataCollatorCTCWithPadding:
         return batch
 
 class ModelRunner:
-    trained_model_path = "./results/trained_model"
 
-    def __init__(self, use_pretrained = False, use_processor = False):
+    def __init__(self, use_pretrained = False, use_processor = False, use_large = False):
         self.use_pretrained = use_pretrained
         self.use_processor = use_processor
+        self.use_large = use_large
 
         self.fix_seed()
         self.load_model(use_pretrained)
@@ -137,10 +137,12 @@ class ModelRunner:
         self.train_dataset, self.test_dataset = torch.utils.data.random_split(self.dataset, [train_size, test_size])
 
     def load_model(self, use_pretrained: bool):
+        self.trained_model_path = f"./results/trained_model/{'large' if self.use_large else 'base'}"
+
         if use_pretrained:
             model_name = self.trained_model_path
         else:
-            model_name = "facebook/wav2vec2-base-960h"
+            model_name = f"facebook/wav2vec2-{'large' if self.use_large else 'base'}-960h"
 
         print(f"Used Model : {model_name}")
 
@@ -175,20 +177,35 @@ class ModelRunner:
 
     def train(self):
         data_collator = DataCollatorCTCWithPadding(processor=self.processor)
-
-        training_args = TrainingArguments(
-            output_dir="./results",               
-            evaluation_strategy="epoch",        
-            learning_rate=3e-5,                  
-            per_device_train_batch_size=8,        
-            per_device_eval_batch_size=8,        
-            num_train_epochs=8,                
-            save_steps=500,                    
-            save_total_limit=10,                 
-            logging_dir="./logs",               
-            logging_steps=50,                  
-            fp16=torch.cuda.is_available(),       
-        )
+        
+        if self.use_large:
+            training_args = TrainingArguments(
+                output_dir="./results",               
+                evaluation_strategy="epoch",        
+                learning_rate=2e-5,                  
+                per_device_train_batch_size=4,        
+                per_device_eval_batch_size=4,        
+                num_train_epochs=10,                
+                save_steps=500,                    
+                save_total_limit=10,                 
+                logging_dir="./logs",               
+                logging_steps=50,                  
+                fp16=torch.cuda.is_available(),       
+            )
+        else:
+            training_args = TrainingArguments(
+                output_dir="./results",               
+                evaluation_strategy="epoch",        
+                learning_rate=3e-5,                  
+                per_device_train_batch_size=8,        
+                per_device_eval_batch_size=8,        
+                num_train_epochs=8,                
+                save_steps=500,                    
+                save_total_limit=10,                 
+                logging_dir="./logs",               
+                logging_steps=50,                  
+                fp16=torch.cuda.is_available(),       
+            )
 
         trainer = Trainer(
             model=self.model,                      
@@ -241,8 +258,8 @@ class ModelRunner:
 
         save_dir = Path('./logs/result')
         os.makedirs(save_dir, exist_ok=True)
-        prediction_result_file = save_dir / f"predictions_{self.use_pretrained}_{self.use_processor}.csv"
-        prediction_summary_file = save_dir /  f"prediction-summary_{self.use_pretrained}_{self.use_processor}.txt"
+        prediction_result_file = save_dir / f"predictions_{'large' if self.use_large else 'base'}_{self.use_pretrained}_{self.use_processor}.csv"
+        prediction_summary_file = save_dir /  f"prediction-summary_{'large' if self.use_large else 'base'}_{self.use_pretrained}_{self.use_processor}.txt"
         columns = ['label', 'prediction', 'WER']
 
         wers = []
@@ -333,18 +350,24 @@ class ModelRunner:
         result_str = result_str.replace('  ', ' ')
 
         return result_str.strip()
+    
+
 import argparse
 
 if __name__ == "__main__":
     argumentParser = argparse.ArgumentParser()
     argumentParser.add_argument("--train", action="store_true", help="Include this option to train the model. Otherwise model inference will be run.")
+    argumentParser.add_argument("--use_large", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     argumentParser.add_argument("--bulk", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     argumentParser.add_argument("--whisper", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     argumentParser.add_argument("--use_post_processor", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     argumentParser.add_argument("--use_pretrained_model", action="store_true", help="When this is set, test will run in bulk on every test cases.")
     args = argumentParser.parse_args()
 
-    runner = ModelRunner(use_pretrained = args.use_pretrained_model, use_processor=args.use_post_processor)
+    runner = ModelRunner(use_pretrained = args.use_pretrained_model, 
+                         use_processor=args.use_post_processor,
+                         use_large=args.use_large)
+    
     vocabularyMatcher = VocabularyMatcher('vocabularies.txt')
 
     if args.train:
