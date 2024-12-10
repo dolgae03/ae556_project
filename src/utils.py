@@ -1,5 +1,5 @@
+import re, math
 import xml.etree.ElementTree as ET
-import re
 import Levenshtein
 
 def parse_xml_to_segments(xml_data):
@@ -56,20 +56,25 @@ class VocabularyMatcher:
         """
         Initialize the VocabularyMatcher class and load the vocabularies from the file.
         """
-        self.vocab = self._load_vocab(vocab_file)
+        self._load_vocab(vocab_file)
     
     def _load_vocab(self, vocab_file):
         """
         Load vocabularies from the given file into a dictionary.
         """
         vocab = {}
+        vocab_max_frequency = 0
         with open(vocab_file, 'r') as f:
             for line in f:
-                word, _ = line.strip().split()
-                vocab[word] = None  # We don't need frequencies for now
-        return vocab.keys()
+                word, frequency = line.strip().split()
+                frequency = int(frequency)
+                vocab[word] = frequency
+                if frequency > vocab_max_frequency: vocab_max_frequency = frequency
+        
+        self.vocab = vocab
+        self.vocab_max_frequency = vocab_max_frequency
     
-    def get_closest_word(self, input_word):
+    def get_closest_word(self, input_word, weight_on_frequencies=False):
         """
         Find the word in the vocabularies closest to the given input_word using Levenshtein distance.
         """
@@ -78,13 +83,20 @@ class VocabularyMatcher:
         
         for vocab_word in self.vocab:
             distance = Levenshtein.distance(input_word.lower(), vocab_word)
+            
+            if weight_on_frequencies:
+                vocab_word_frequency = self.vocab[vocab_word]
+                vocab_word_frequency_normalized = math.log2(vocab_word_frequency / self.vocab_max_frequency)
+                weight_factor = 0.4
+                distance = distance - vocab_word_frequency_normalized * weight_factor
+
             if distance < min_distance:
                 min_distance = distance
                 closest_word = vocab_word
                 
         return closest_word
 
-    def get_closest_words(self, input_string):
+    def get_closest_words(self, input_string, weight_on_frequencies=False):
         input_words = input_string.split(' ')
-        closest_words = list(map(self.get_closest_word, input_words))
+        closest_words = list(map(lambda input_word: self.get_closest_word(input_word, weight_on_frequencies), input_words))
         return ' '.join(closest_words)

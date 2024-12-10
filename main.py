@@ -373,11 +373,11 @@ if __name__ == "__main__":
     if args.train:
         runner.train()
     elif args.whisper:
-        post_processor = vocabularyMatcher.get_closest_words if args.use_post_processor else None
+        post_processor = (lambda input_string: vocabularyMatcher.get_closest_words(input_string, False)) if args.use_post_processor else None
         runner.test_whisper(post_processor = post_processor)
     else:
         if args.bulk: 
-            post_processor = vocabularyMatcher.get_closest_words if args.use_post_processor else None
+            post_processor = (lambda input_string: vocabularyMatcher.get_closest_words(input_string, False)) if args.use_post_processor else None
             runner.test_bulk(post_processor = post_processor)
         else: 
             runner.test(0)
