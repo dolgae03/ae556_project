@@ -4,3 +4,4 @@ pydub
 librosa
 jiwer
 Levenshtein
+tqdm
