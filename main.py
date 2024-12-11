@@ -39,7 +39,6 @@ class DataCollatorCTCWithPadding:
             return_tensors="pt"
         )
 
-        # 텍스트 라벨 패딩
         with self.processor.as_target_processor():
             labels_batch = self.processor.tokenizer.pad(
                 {"input_ids": label_features},
@@ -47,7 +46,6 @@ class DataCollatorCTCWithPadding:
                 return_tensors="pt",
             )
 
-        # 패딩 과정에서 생긴 -100 처리
         labels = labels_batch["input_ids"].masked_fill(labels_batch.attention_mask.ne(1), -100)
         
         batch["labels"] = labels
@@ -60,8 +58,8 @@ class ModelRunner:
         self.use_processor = use_processor
         self.use_large = use_large
 
-        self.fix_seed()
         self.load_model(use_pretrained)
+        self.fix_seed()
         self.prepare_data()
 
     def fix_seed(self, seed=42):
@@ -70,9 +68,8 @@ class ModelRunner:
     
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)  # Multi-GPU의 경우
+        torch.cuda.manual_seed_all(seed)
         
-        # PyTorch에서 Reproducibility 보장
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
 
@@ -125,11 +122,6 @@ class ModelRunner:
                     f.write(segment_text)
         
         self.dataset = SpeechDataset(audio_processed_dir, text_processed_dir, self.processor)
-        # labels = self.processor.tokenizer(self.dataset[0]['txt_raw'], return_tensors="pt").input_ids
-        # print("Tokenized labels:", labels)
-
-        # print(self.dataset[0])
-        # exit(0)
         print('Length of Dataset' , len(self.dataset))
 
         train_size = int(0.8 * len(self.dataset))
@@ -151,6 +143,9 @@ class ModelRunner:
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
+
+        total_params = sum(p.numel() for p in self.model.parameters())
+        print(f"Model '{model_name}' has {total_params:,} parameters.")
     
     def compute_metrics(self, pred):
         pred_logits = pred.predictions
@@ -161,19 +156,8 @@ class ModelRunner:
         labels[labels == -100] = self.processor.tokenizer.pad_token_id
         references = self.processor.batch_decode(labels, group_tokens=False)
 
-        filtered_references = []
-        filtered_predictions = []
-
-        for ref, pred_text in zip(references, predictions):
-            if ref.strip() != "":
-                filtered_references.append(ref)
-                filtered_predictions.append(pred_text)
-
-        if len(filtered_references) == 0:
-            return {"cer": 1.0} 
-
-        cer = jiwer.wer(filtered_references, filtered_predictions)
-        return {"cer": cer}
+        wer = jiwer.wer(references, predictions)
+        return {"wer": wer}
 
     def train(self):
         data_collator = DataCollatorCTCWithPadding(processor=self.processor)
@@ -229,20 +213,15 @@ class ModelRunner:
     def test(self, sample_index, post_processor=None):
         sample = self.test_dataset[sample_index]
 
-        # 모델 입력 준비
         input_values = sample["input_values"].unsqueeze(0).to(self.model.device)
         attention_mask = sample["attention_mask"].unsqueeze(0).to(self.model.device)
-        labels = sample["labels"].unsqueeze(0)
         raw_transcription = sample['txt_raw']
 
-        # 모델 추론
         with torch.no_grad():
             logits = self.model(input_values, attention_mask=attention_mask).logits
 
-        # 예측된 토큰 ID
         pred_ids = torch.argmax(logits, dim=-1)
 
-        # 예측 문자열 디코딩
         pred_str = self.processor.batch_decode(pred_ids)[0]
         
         if post_processor is not None: pred_str = post_processor(pred_str)
